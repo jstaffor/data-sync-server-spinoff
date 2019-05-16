@@ -1,24 +1,34 @@
 const express = require('express')
-
+//Include our server libraries
 const { VoyagerServer, gql } = require('@aerogear/voyager-server')
 
-// This is our Schema Definition Language (SDL)
+// Stub that reflects data source mapping
+const employees = [{employee_id: 1, employee_name: "joe", cateory_id: 1 }, {employee_id: 2, employee_name: "john", cateory_id: 2}];
+
+const categories = [{category_id: 1, employee_type:"Manager", security_clearance: 1}, {category_id: 2, employee_type:"Associate", security_clearance: 2}];
+
+//GraphQL schema for mapping to data source mapping
 const typeDefs = gql`
+  type Employee {
+      employee_id: ID!,
+      employee_name: String!
+      category: Category
+  }
+  type Category {
+      category_id: ID!,
+      employee_type: String!,
+      security_clearance: ID!
+  }
   type Query {
-    hello: String
+    listEmployees: [Employee]
   }
 `
 
-// Resolver functions. This is our business logic
+//Create the resolvers for your schema
 const resolvers = {
   Query: {
-    hello: (obj, args, context, info) => {
-      // we can access the request object provided by the Voyager framework
-      console.log(context.request.body)
-
-      // we can access the context added below also
-      console.log(context.serverName)
-      return `Hello world from ${context.serverName}`
+    listEmployees: (obj, args, context, info) => {
+      return employees;
     }
   }
 }
