@@ -1,0 +1,56 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Launch Basic Example",
+      "program": "${workspaceFolder}/examples/basic/index.js",
+      "outFiles": [
+        "${workspaceFolder}/**/*.js"
+      ]
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Launch Keycloak Example",
+      "program": "${workspaceFolder}/examples/keycloak/index.js",
+      "outFiles": [
+        "${workspaceFolder}/**/*.js"
+      ]
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Launch Audit Logging Example",
+      "program": "${workspaceFolder}/examples/audit_logging/index.js",
+      "outFiles": [
+        "${workspaceFolder}/**/*.js"
+      ]
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Launch Conflict Example",
+      "program": "${workspaceFolder}/examples/conflicts/index.js",
+      "outFiles": [
+        "${workspaceFolder}/**/*.js"
+      ]
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Launch Metrics Example",
+      "program": "${workspaceFolder}/examples/metrics/index.js",
+      "outFiles": [
+        "${workspaceFolder}/**/*.js"
+      ]
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Launch REST API integration Example",
+      "program": "${workspaceFolder}/examples/restapi/index.js"
+    }
+  ]
+}

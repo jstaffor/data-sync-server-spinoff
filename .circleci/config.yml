@@ -1,0 +1,117 @@
+version: 2
+jobs:
+  build:
+    working_directory: ~/aerogear
+    docker:
+      # Node 8 LTS
+      - image: circleci/node:lts
+    steps:
+      - checkout
+      - run:
+          name: install dependencies
+          command: npm install
+      - run:
+          name: bootstrap project
+          command: npm run bootstrap
+      - run:
+          name: compile
+          command: npm run compile
+      - run:
+          name: test
+          command: npm test
+      - run:
+          name: coverage
+          command: npm run coverage
+      - run:
+          name: Lint all TypeScript code
+          command: npm run lint:ts
+      - run:
+          name: Lint all JavaScript code
+          command: npm run lint:js
+  test_examples:
+    docker:
+      # Node 8 LTS
+      - image: circleci/node:lts
+      # keycloak
+      - image: jboss/keycloak:3.4.3.Final
+        name: keycloak_instance
+        environment:
+            KEYCLOAK_USER: admin
+            KEYCLOAK_PASSWORD: admin
+            DB_VENDOR: h2
+    steps:
+      - checkout
+      - run:
+          name: Wait for keycloak instance to start up
+          command: dockerize -wait tcp://keycloak_instance:8080 -timeout 120s
+      - run:
+          name: install dependencies
+          command: npm install
+      - run:
+          name: bootstrap project
+          command: npm run bootstrap
+      - run:
+          name: compile
+          command: npm run compile
+      - run:
+          command: cd examples && npm run test-examples
+          environment:
+            KEYCLOAK_HOST: 'keycloak_instance'
+            KEYCLOAK_PORT: '8080'
+  npm_publish:
+    working_directory: ~/aerogear
+    docker:
+      # Node 8 LTS
+      - image: circleci/node:lts
+    steps:
+      - checkout
+        # Allows us to authenticate with the npm registry
+      - run: echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > ~/.npmrc
+      - run: CI=true npm run release:prep
+      - run: TAG=$CIRCLE_TAG npm run release:validate
+      - run: TAG=$CIRCLE_TAG npm run publish
+  publish_example_containers:
+    working_directory: ~/aerogear
+    docker:
+      # image for building docker containers
+      - image: docker:17.12.1-ce-git
+    steps:
+      - checkout
+      - run: echo "Sleeping for 3 minutes to allow NPM publish to be effective"
+      - run: sleep 180
+      # special woraround to allow running docker in docker https://circleci.com/docs/2.0/building-docker-images/
+      - setup_remote_docker:
+          version: 17.05.0-ce
+          docker_layer_caching: true
+      - run: |
+          cd examples
+          TAG=$CIRCLE_TAG ../scripts/publishExamples.sh basic
+workflows:
+  version: 2
+  build_and_release:
+    jobs:
+      - build:
+          filters:
+            tags:
+              only: /.*/
+      - test_examples:
+          filters:
+            tags:
+              only: /.*/
+      - npm_publish:
+          requires:
+            - build
+            - test_examples
+          filters:
+            tags:
+              only: /.*/ # allow anything because tag syntax is validated as part of validate-release.sh
+            branches:
+              ignore: /.*/
+      - publish_example_containers:
+          requires:
+            - npm_publish
+          filters:
+            tags:
+              only: /.*/
+            branches:
+              ignore: /.*/
