@@ -30,6 +30,11 @@ const resolvers = {
     listEmployees: (obj, args, context, info) => {
       return employees;
     }
+  },
+  Employee: {
+    category(employee) {
+      return filter(categories, {category_id: employee.cateory_id});
+    }
   }
 }
 
