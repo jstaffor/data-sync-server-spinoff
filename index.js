@@ -2,40 +2,48 @@ const express = require('express')
 //Include our server libraries
 const { VoyagerServer, gql } = require('@aerogear/voyager-server')
 
-// Stub that reflects data source mapping
-const employees = [{employee_id: 1, employee_name: "joe", cateory_id: 1 }, {employee_id: 2, employee_name: "john", cateory_id: 2}];
-
-const categories = [{category_id: 1, employee_type:"Manager", security_clearance: 1}, {category_id: 2, employee_type:"Associate", security_clearance: 2}];
-
-//GraphQL schema for mapping to data source mapping
+//Provide your graphql schema
 const typeDefs = gql`
-  type Employee {
-      employee_id: ID!,
-      employee_name: String!
-      category: Category
-  }
-  type Category {
-      category_id: ID!,
-      employee_type: String!,
-      security_clearance: ID!
-  }
-  type Query {
-    listEmployees: [Employee]
-  }
+type Query {
+  info: String!
+  addressBook: [Person!]!
+}
+
+type Mutation {
+  post(name: String!, address: String!): Person!
+}
+
+type Person {
+  id: ID!
+  address: String!
+  name: String!
+}
 `
 
-//Create the resolvers for your schema
+let persons = [{
+  id: 'person-0',
+  name: 'Alice Roberts',
+  address: '1 Red Square, Waterford'
+}]
+
+let idCount = persons.length
 const resolvers = {
   Query: {
-    listEmployees: (obj, args, context, info) => {
-      return employees;
+    info: () => `This is a simple example`,
+    addressBook: () => persons,
+  },
+  Mutation: {
+
+    post: (parent, args) => {
+       const person = {
+        id: `person-${idCount++}`,
+        address: args.address,
+        name: args.name,
+      }
+      persons.push(person)
+      return person
     }
   },
-  Employee: {
-    category(employee) {
-      return filter(categories, {category_id: employee.cateory_id});
-    }
-  }
 }
 
 //Initialize the library with your GraphQL information
